@@ -1,2 +1,2 @@
 # dev-push-server
-Push Server to support WebPush notifications
+Node.js server which handles web push subscription/notifications. Subs are persisted in Mongo.
