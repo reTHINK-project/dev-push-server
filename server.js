@@ -1,4 +1,5 @@
 const express = require('express');
+var cors = require('cors');
 const webpush = require('web-push');
 const mongoose = require('mongoose');
 
@@ -10,6 +11,7 @@ webpush.setVapidDetails('mailto:rafaelfelgueiras1993@gmail.com', publicVapidKey,
 
 const app = express();
 
+app.use(cors());
 app.use(require('body-parser').json());
 
 // mongo
@@ -35,19 +37,26 @@ var Subscription = mongoose.model('subscription', subscriptionSchema);
 // listen for subscriptions
 app.post('/subscribe', (req, res) => {
   console.log(req.body);
-  
+
   const subscription = req.body;
   res.status(201).json({});
- 
 
-  // create document
-  var sub = new Subscription({ subscription: subscription });
-
-  // save
-  sub.save(function (err, fluffy) {
+  Subscription.findOne({ subscription: subscription }, function (err, res) {
     if (err) return console.error(err);
-    console.log('saved');
-  });
+    console.log('Found: ', res);
+
+    if (res == null) {
+      // create document
+      var sub = new Subscription({ subscription: subscription });
+      // save
+      sub.save(function (err, sub) {
+        if (err) return console.error(err);
+        console.log('saved');
+      });
+    }
+  })
+
+
 
 });
 
@@ -60,30 +69,17 @@ app.post('/delete', (req, res) => {
 });
 
 app.post('/send', (req, res) => {
-  // const subscription = req.body;
+  const notification = req.body;
   res.status(201).json({});
-  console.log('SENDING');
   
-  const payload = JSON.stringify(
-    {
-      title: 'Novo inquérito!',
-      actions: [
-        {
-          action: 'inquiry-https://www.sapo.pt', title: 'Ir para o quiz!',
-          // icon: 'images/checkmark.png'
-        },
-        {
-          action: 'close', title: 'Fechar notificação',
-          // icon: 'images/xmark.png'
-        },
-      ]
-    }
-  );
+  const payload = JSON.stringify(notification);
+  console.log('Sending ', payload);
+  
   Subscription.find(function (err, subs) {
     if (err) return console.error(err);
-    
+
     subs.forEach(sub => {
-      console.log('Sub: ', sub);
+      // console.log('Sub: ', sub);
       webpush.sendNotification(sub.subscription, payload).catch(error => {
         console.error(error.stack);
       });
@@ -94,4 +90,4 @@ app.post('/send', (req, res) => {
 
 app.use(require('express-static')('./'));
 
-app.listen(3000);
+app.listen(3002);
