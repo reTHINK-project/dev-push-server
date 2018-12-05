@@ -8,5 +8,8 @@
     "express-static": "1.2.5",
     "mongoose": "^5.3.14",
     "web-push": "3.3.0"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }
