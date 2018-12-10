@@ -15,7 +15,8 @@ app.use(cors());
 app.use(require('body-parser').json());
 
 // mongo
-mongoose.connect('mongodb://localhost/test');
+let mongoHosts = (process.env.MONGO_HOSTS) ? process.env.MONGO_HOSTS : 'mongodb://localhost/test';
+mongoose.connect(mongoHosts);
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -65,18 +66,18 @@ app.post('/delete', (req, res) => {
     if (err) return console.error(err);
 
     console.log('deleted');
-    
+
   });
-  
+
 });
 
 app.post('/send', (req, res) => {
   const notification = req.body;
   res.status(201).json({});
-  
+
   const payload = JSON.stringify(notification);
   console.log('Sending ', payload);
-  
+
   Subscription.find(function (err, subs) {
     if (err) return console.error(err);
 
@@ -92,4 +93,7 @@ app.post('/send', (req, res) => {
 
 app.use(require('express-static')('./'));
 
-app.listen(3002);
+let nodePort = (process.env.NODE_PORT) ? Number(process.env.NODE_PORT) : 3002;
+console.log('Listing on ', nodePort);
+
+app.listen(nodePort);
