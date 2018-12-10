@@ -36,14 +36,12 @@ var Subscription = mongoose.model('subscription', subscriptionSchema);
 
 // listen for subscriptions
 app.post('/subscribe', (req, res) => {
-  console.log(req.body);
 
   const subscription = req.body;
   res.status(201).json({});
 
   Subscription.findOne({ subscription: subscription }, function (err, res) {
     if (err) return console.error(err);
-    console.log('Found: ', res);
 
     if (res == null) {
       // create document
@@ -54,18 +52,22 @@ app.post('/subscribe', (req, res) => {
         console.log('saved');
       });
     }
-  })
+  });
 
 
 
 });
 
 app.post('/delete', (req, res) => {
-  // const subscription = req.body;
-  console.log('deleted all');
+  const subscription = req.body;
   res.status(201).json({});
-  Subscription.deleteMany({}, function (err) { });
+  Subscription.findOneAndDelete({ subscription: subscription }, function (err, res) {
+    if (err) return console.error(err);
 
+    console.log('deleted');
+    
+  });
+  
 });
 
 app.post('/send', (req, res) => {
