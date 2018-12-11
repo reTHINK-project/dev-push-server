@@ -32,7 +32,8 @@ var subscriptionSchema = new mongoose.Schema({
 });
 
 var notificationSchema = new mongoose.Schema({
-  notification: Object
+  notification: Object,
+  date: Date
 });
 
 // schema -> model
@@ -64,7 +65,7 @@ app.post('/subscribe', (req, res) => {
 
 });
 
-app.post('/delete', (req, res) => {
+app.delete('/subscription', (req, res) => {
   const subscription = req.body;
   res.status(201).json({});
   Subscription.findOneAndDelete({ subscription: subscription }, function (err, res) {
@@ -72,6 +73,16 @@ app.post('/delete', (req, res) => {
 
     console.log('deleted');
 
+  });
+
+});
+
+
+app.delete('/notifications', (req, res) => {
+  res.status(201).json({});
+  Notification.deleteMany(function (err, res) {
+    if (err) return console.error(err);
+    console.log('deleted notifications');
   });
 
 });
@@ -84,7 +95,7 @@ app.post('/notification', (req, res) => {
   console.log('Sending ', payload);
 
   // save notification
-  const notificationMongo = new Notification({ notification: notification });
+  const notificationMongo = new Notification({ notification: notification, date: new Date() });
   notificationMongo.save(function (err, sub) {
     if (err) return console.error(err);
     console.log('saved notification');
@@ -105,7 +116,7 @@ app.post('/notification', (req, res) => {
 
 app.get('/notifications', (req, res) => {
   console.log('getting notifications');
-  
+
   Notification.find(function (err, subs) {
     if (err) return console.error(err);
     res.status(201).json(subs);
