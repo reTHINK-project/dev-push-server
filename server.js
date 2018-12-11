@@ -26,13 +26,18 @@ db.once('open', function () {
 
 });
 
-// schema
+// schemas
 var subscriptionSchema = new mongoose.Schema({
   subscription: Object
 });
 
+var notificationSchema = new mongoose.Schema({
+  notification: Object
+});
+
 // schema -> model
 var Subscription = mongoose.model('subscription', subscriptionSchema);
+var Notification = mongoose.model('notification', notificationSchema);
 
 
 // listen for subscriptions
@@ -71,12 +76,19 @@ app.post('/delete', (req, res) => {
 
 });
 
-app.post('/send', (req, res) => {
+app.post('/notification', (req, res) => {
   const notification = req.body;
   res.status(201).json({});
 
   const payload = JSON.stringify(notification);
   console.log('Sending ', payload);
+
+  // save notification
+  const notificationMongo = new Notification({ notification: notification });
+  notificationMongo.save(function (err, sub) {
+    if (err) return console.error(err);
+    console.log('saved notification');
+  });
 
   Subscription.find(function (err, subs) {
     if (err) return console.error(err);
@@ -88,6 +100,15 @@ app.post('/send', (req, res) => {
       });
 
     });
+  })
+});
+
+app.get('/notifications', (req, res) => {
+  console.log('getting notifications');
+  
+  Notification.find(function (err, subs) {
+    if (err) return console.error(err);
+    res.status(201).json(subs);
   })
 });
 
