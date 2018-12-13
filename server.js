@@ -115,9 +115,10 @@ app.post('/notification', (req, res) => {
 });
 
 app.get('/notifications', (req, res) => {
-  console.log('getting notifications');
+  const lastDate = req.query.date;
+  console.log('getting notifications after date: ', lastDate);
 
-  Notification.find(function (err, subs) {
+  Notification.find({ date: { "$gt": new Date(lastDate)} }, function (err, subs) {
     if (err) return console.error(err);
     res.status(201).json(subs);
   })
