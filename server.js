@@ -37,8 +37,8 @@ var notificationSchema = new mongoose.Schema({
 });
 
 // schema -> model
-var Subscription = mongoose.model('subscription', subscriptionSchema);
-var Notification = mongoose.model('notification', notificationSchema);
+var Subscription = mongoose.model(process.env.SUBSCRIPTION_COLLECTION, subscriptionSchema);
+var Notification = mongoose.model(process.env.NOTIFICATION_COLLECTION, notificationSchema);
 
 
 // listen for subscriptions
