@@ -3,8 +3,8 @@ var cors = require('cors');
 const webpush = require('web-push');
 const mongoose = require('mongoose');
 
-const publicVapidKey = 'BKlOPcEel9zWecQsMCCwmaGIR7Sn6R85d5GSferRw3O8MMBbVeyjsUUynoKwOtnKAdWwYyhHtN-zp7NsWSMq7MQ';
-const privateVapidKey = 'quY8wOageM5yhY0Tp9M1LHHv6hP0vPLoxOU2e4rMzjM';
+const publicVapidKey = 'BModNUsDflbBPzM7GGJelo4vh_wPzfCUpp7VHQAr8zeCuWkTeja4xk0XvWIj7KImXZ6iG6yqw_DfiJSJNvj7ofA';
+const privateVapidKey = 'IDQK8cT5rqpCpvZet5p7z1kWAsuCkOOeeD30e1mB62Y';
 
 // Replace with your email
 webpush.setVapidDetails('mailto:rafaelfelgueiras1993@gmail.com', publicVapidKey, privateVapidKey);
