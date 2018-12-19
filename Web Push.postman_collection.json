@@ -1,0 +1,108 @@
+{
+	"info": {
+		"_postman_id": "917f1fcd-2192-4713-b333-83c894fa2edd",
+		"name": "Web Push",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get notifications",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{HOST_PORT}}/notifications?date=2018-12-13T11:23:01.007Z",
+					"host": [
+						"{{HOST_PORT}}"
+					],
+					"path": [
+						"notifications"
+					],
+					"query": [
+						{
+							"key": "date",
+							"value": "2018-12-13T11:23:01.007Z"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete notifications",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{HOST_PORT}}/notifications",
+					"host": [
+						"{{HOST_PORT}}"
+					],
+					"path": [
+						"notifications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post notification - inquérito",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n      \"title\": \"Teste\",\r\n      \"body\": \"Andar a pé e de bicicleta dá Pontos a dobrar até 2/jan\"\r\n    }"
+				},
+				"url": {
+					"raw": "{{HOST_PORT}}/notification",
+					"host": [
+						"{{HOST_PORT}}"
+					],
+					"path": [
+						"notification"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
