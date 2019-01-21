@@ -107,7 +107,7 @@ app.post('/notification', (req, res) => {
     subs.forEach(sub => {
       // console.log('Sub: ', sub);
       webpush.sendNotification(sub.subscription, payload).catch(error => {
-        console.error(error.stack);
+        console.error(error);
       });
 
     });
