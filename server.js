@@ -65,16 +65,21 @@ app.post('/subscribe', (req, res) => {
 
 });
 
-app.delete('/subscription', (req, res) => {
-  const subscription = req.body;
-  res.status(201).json({});
+function deleteSubscription(subscription) {
+
   Subscription.findOneAndDelete({ subscription: subscription }, function (err, res) {
     if (err) return console.error(err);
 
-    console.log('deleted');
+    console.log('deleted ', subscription);
 
   });
 
+}
+
+app.delete('/subscription', (req, res) => {
+  const subscription = req.body;
+  res.status(201).json({});
+  deleteSubscription(subscription);
 });
 
 
@@ -92,7 +97,6 @@ app.post('/notification', (req, res) => {
   res.status(201).json({});
 
   const payload = JSON.stringify(notification);
-  console.log('Sending ', payload);
 
   // save notification
   const notificationMongo = new Notification({ notification: notification, date: new Date() });
@@ -103,12 +107,20 @@ app.post('/notification', (req, res) => {
 
   Subscription.find(function (err, subs) {
     if (err) return console.error(err);
+    console.log(`Sending ${payload} to ${subs.length} subscribers`);
 
     subs.forEach(sub => {
-      // console.log('Sub: ', sub);
-      webpush.sendNotification(sub.subscription, payload).catch(error => {
-        console.error(error);
-      });
+      const { subscription } = sub;
+      webpush.sendNotification(subscription, payload)
+        .catch((err) => {
+          if (err.statusCode === 410) {
+            // the subscription has expired or is no longer valid. In these scenarios we remove the subscriptions the DB
+            deleteSubscription(subscription);
+          } else {
+            console.log('Subscription is no longer valid: ', err);
+            deleteSubscription(subscription)
+          }
+        });
 
     });
   })
@@ -118,7 +130,7 @@ app.get('/notifications', (req, res) => {
   const lastDate = req.query.date;
   console.log('getting notifications after date: ', lastDate);
 
-  Notification.find({ date: { "$gt": new Date(lastDate)} }, function (err, subs) {
+  Notification.find({ date: { "$gt": new Date(lastDate) } }, function (err, subs) {
     if (err) return console.error(err);
     res.status(201).json(subs);
   })
