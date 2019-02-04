@@ -136,6 +136,15 @@ app.get('/notifications', (req, res) => {
   })
 });
 
+app.get('/subscriptions', (req, res) => {
+  console.log('getting subscriptions');
+
+  Subscription.find({}, function (err, subs) {
+    if (err) return console.error(err);
+    res.status(201).json(subs);
+  })
+});
+
 app.use(require('express-static')('./'));
 
 let nodePort = (process.env.NODE_PORT) ? Number(process.env.NODE_PORT) : 3002;
