@@ -2,6 +2,36 @@ const express = require('express');
 var cors = require('cors');
 const webpush = require('web-push');
 const mongoose = require('mongoose');
+// models
+require('./models/Subscription');
+require('./models/Notification');
+require('./models/User');
+
+const Subscription = mongoose.model('subscription');
+const Notification = mongoose.model('notification');
+const User = mongoose.model('User');
+
+//passport 
+const passport = require("passport");
+const LocalStrategy = require('passport-local').Strategy;
+passport.use(new LocalStrategy(
+  function (username, password, done) {
+    console.log('Searching for ', username, password);
+
+    User.findOne({ username: username }, function (err, user) {
+      console.log(err, user);
+
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });
+  }
+));
 
 const publicVapidKey = 'BModNUsDflbBPzM7GGJelo4vh_wPzfCUpp7VHQAr8zeCuWkTeja4xk0XvWIj7KImXZ6iG6yqw_DfiJSJNvj7ofA';
 const privateVapidKey = 'IDQK8cT5rqpCpvZet5p7z1kWAsuCkOOeeD30e1mB62Y';
@@ -25,20 +55,6 @@ db.once('open', function () {
   console.log('connected to Mongo');
 
 });
-
-// schemas
-var subscriptionSchema = new mongoose.Schema({
-  subscription: Object
-});
-
-var notificationSchema = new mongoose.Schema({
-  notification: Object,
-  date: Date
-});
-
-// schema -> model
-var Subscription = mongoose.model(process.env.SUBSCRIPTION_COLLECTION, subscriptionSchema);
-var Notification = mongoose.model(process.env.NOTIFICATION_COLLECTION, notificationSchema);
 
 
 // listen for subscriptions
@@ -85,6 +101,10 @@ app.delete('/subscription', (req, res) => {
 
 app.delete('/notifications', (req, res) => {
   res.status(201).json({});
+
+  // TODO: security
+
+
   Notification.deleteMany(function (err, res) {
     if (err) return console.error(err);
     console.log('deleted notifications');
@@ -92,39 +112,45 @@ app.delete('/notifications', (req, res) => {
 
 });
 
-app.post('/notification', (req, res) => {
-  const notification = req.body;
-  res.status(201).json({});
 
-  const payload = JSON.stringify(notification);
 
-  // save notification
-  const notificationMongo = new Notification({ notification: notification, date: new Date() });
-  notificationMongo.save(function (err, sub) {
-    if (err) return console.error(err);
-    console.log('saved notification');
-  });
+app.post('/notification',
+  //  passport.authenticate('local'),
+  (req, res) => {
+    const notification = req.body;
+    res.status(201).json({});
 
-  Subscription.find(function (err, subs) {
-    if (err) return console.error(err);
-    console.log(`Sending ${payload} to ${subs.length} subscribers`);
+    // TODO: security
 
-    subs.forEach(sub => {
-      const { subscription } = sub;
-      webpush.sendNotification(subscription, payload)
-        .catch((err) => {
-          if (err.statusCode === 410) {
-            // the subscription has expired or is no longer valid. In these scenarios we remove the subscriptions the DB
-            deleteSubscription(subscription);
-          } else {
-            console.log('Subscription is no longer valid: ', err);
-            deleteSubscription(subscription)
-          }
-        });
+    const payload = JSON.stringify(notification);
 
+    // save notification
+    const notificationMongo = new Notification({ notification: notification, date: new Date() });
+    notificationMongo.save(function (err, sub) {
+      if (err) return console.error(err);
+      console.log('saved notification');
     });
-  })
-});
+
+    Subscription.find(function (err, subs) {
+      if (err) return console.error(err);
+      console.log(`Sending ${payload} to ${subs.length} subscribers`);
+
+      subs.forEach(sub => {
+        const { subscription } = sub;
+        webpush.sendNotification(subscription, payload)
+          .catch((err) => {
+            if (err.statusCode === 410) {
+              // the subscription has expired or is no longer valid. In these scenarios we remove the subscriptions the DB
+              deleteSubscription(subscription);
+            } else {
+              console.log('Subscription is no longer valid: ', err);
+              deleteSubscription(subscription)
+            }
+          });
+
+      });
+    })
+  });
 
 app.get('/notifications', (req, res) => {
   const lastDate = req.query.date;
