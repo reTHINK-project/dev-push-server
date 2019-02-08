@@ -1,0 +1,3 @@
+exports.publicVapidKey = 'BModNUsDflbBPzM7GGJelo4vh_wPzfCUpp7VHQAr8zeCuWkTeja4xk0XvWIj7KImXZ6iG6yqw_DfiJSJNvj7ofA';
+exports.privateVapidKey = 'IDQK8cT5rqpCpvZet5p7z1kWAsuCkOOeeD30e1mB62Y';
+
