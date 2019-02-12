@@ -153,39 +153,6 @@ app.get('/subscriptions', (req, res) => {
   })
 });
 
-
-/**
- * Register
- */
-app.post('/register',
-  auth.optional,
-  (req, res, next) => {
-    const { body: { user } } = req;
-
-    if (!user.email) {
-      return res.status(422).json({
-        errors: {
-          email: 'is required',
-        },
-      });
-    }
-
-    if (!user.password) {
-      return res.status(422).json({
-        errors: {
-          password: 'is required',
-        },
-      });
-    }
-
-    const finalUser = new User(user);
-
-    finalUser.setPassword(user.password);
-
-    return finalUser.save()
-      .then(() => res.json({ user: finalUser.toAuthJSON() }));
-  });
-
 //POST login route (optional, everyone has access)
 app.post('/login',
   auth.optional,
@@ -229,6 +196,25 @@ app.post('/login',
 app.use(require('express-static')('./'));
 
 let nodePort = (process.env.NODE_PORT) ? Number(process.env.NODE_PORT) : 3002;
-console.log('Listing on ', nodePort);
+console.log('Listening on ', nodePort);
 
 app.listen(nodePort);
+
+const singleUser = {
+  email: "admin",
+  password: "admin"
+}
+
+User.findOne({ email: singleUser.email })
+  .then((user) => {
+
+    const finalUser = new User(singleUser);
+
+    if (user)
+      return;
+
+    finalUser.setPassword(singleUser.password);
+    finalUser.save().then(res => {
+      console.log('added user');
+    })
+  }).catch();
