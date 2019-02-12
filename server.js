@@ -2,6 +2,7 @@ const express = require('express');
 var cors = require('cors');
 const webpush = require('web-push');
 const mongoose = require('mongoose');
+const auth = require('./auth.js');
 // models
 require('./models/Subscription');
 require('./models/Notification');
@@ -12,6 +13,7 @@ const { publicVapidKey, privateVapidKey } = require('./config/vapid');
 
 const Subscription = mongoose.model('subscription');
 const Notification = mongoose.model('notification');
+const User = mongoose.model('User');
 
 //passport 
 const passport = require("passport");
@@ -82,11 +84,9 @@ app.delete('/subscription',
 
 
 app.delete('/notifications',
-  passport.authenticate('local'),
+  auth.required,
   (req, res) => {
     res.status(201).json({});
-
-    // TODO: security
 
 
     Notification.deleteMany(function (err, res) {
@@ -99,12 +99,10 @@ app.delete('/notifications',
 
 
 app.post('/notification',
-  passport.authenticate('local'),
+  auth.required,
   (req, res) => {
     const notification = req.body;
     res.status(201).json({});
-
-    // TODO: security
 
     const payload = JSON.stringify(notification);
 
@@ -154,6 +152,79 @@ app.get('/subscriptions', (req, res) => {
     res.status(201).json(subs);
   })
 });
+
+
+/**
+ * Register
+ */
+app.post('/register',
+  auth.optional,
+  (req, res, next) => {
+    const { body: { user } } = req;
+
+    if (!user.email) {
+      return res.status(422).json({
+        errors: {
+          email: 'is required',
+        },
+      });
+    }
+
+    if (!user.password) {
+      return res.status(422).json({
+        errors: {
+          password: 'is required',
+        },
+      });
+    }
+
+    const finalUser = new User(user);
+
+    finalUser.setPassword(user.password);
+
+    return finalUser.save()
+      .then(() => res.json({ user: finalUser.toAuthJSON() }));
+  });
+
+//POST login route (optional, everyone has access)
+app.post('/login',
+  auth.optional,
+  (req, res, next) => {
+    const { body: { user } } = req;
+
+
+    if (!user.email) {
+      return res.status(422).json({
+        errors: {
+          email: 'is required',
+        },
+      });
+    }
+
+    if (!user.password) {
+      return res.status(422).json({
+        errors: {
+          password: 'is required',
+        },
+      });
+    }
+
+    return passport.authenticate('local', { session: false }, (err, passportUser, info) => {
+
+      if (err) {
+        return next(err);
+      }
+
+      if (passportUser) {
+        const user = passportUser;
+        user.token = passportUser.generateJWT();
+
+        return res.json({ user: user.toAuthJSON() });
+      }
+
+      return res.status(400).json(info);
+    })(req, res, next);
+  });
 
 app.use(require('express-static')('./'));
 
