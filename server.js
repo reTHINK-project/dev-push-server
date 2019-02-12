@@ -11,8 +11,8 @@ require('./config/passport');
 const { publicVapidKey, privateVapidKey } = require('./config/vapid');
 
 
-const Subscription = mongoose.model('subscription');
-const Notification = mongoose.model('notification');
+const Notification = mongoose.model(process.env.NOTIFICATION_COLLECTION);
+const Subscription = mongoose.model(process.env.SUBSCRIPTION_COLLECTION);
 const User = mongoose.model('User');
 
 //passport 
