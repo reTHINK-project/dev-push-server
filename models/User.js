@@ -23,7 +23,9 @@ UsersSchema.methods.validatePassword = function (password) {
 UsersSchema.methods.generateJWT = function () {
     const today = new Date();
     const expirationDate = new Date(today);
-    expirationDate.setDate(today.getDate() + 600000000000000);
+    // 5 year validity
+    const aux = 5 * 365;
+    expirationDate.setDate(today.getDate() + aux);
 
     return jwt.sign({
         email: this.email,
