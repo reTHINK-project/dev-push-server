@@ -29,7 +29,7 @@ app.use(passport.session());
 
 // mongo
 let mongoHosts = (process.env.MONGO_HOSTS) ? process.env.MONGO_HOSTS : 'mongodb://localhost/test';
-mongoose.connect(mongoHosts);
+mongoose.connect(mongoHosts, { useNewUrlParser: true });
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
